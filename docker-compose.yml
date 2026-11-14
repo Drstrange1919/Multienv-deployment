@@ -1,0 +1,91 @@
+services:
+  backend-dev:
+    build:
+      context: ./backend/dev
+      dockerfile: Dockerfile
+    container_name: multienv-backend-dev
+    env_file:
+      - ./backend/dev/.env
+    environment:
+      APP_ENV: development
+      PORT: "3001"
+    ports:
+      - "127.0.0.1:3001:3001"
+    networks:
+      - multienv-network
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:3001/api/health', timeout=3)"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  backend-prod:
+    build:
+      context: ./backend/prod
+      dockerfile: Dockerfile
+    container_name: multienv-backend-prod
+    env_file:
+      - ./backend/prod/.env
+    environment:
+      APP_ENV: production
+      PORT: "3002"
+    ports:
+      - "127.0.0.1:3002:3002"
+    networks:
+      - multienv-network
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:3002/api/health', timeout=3)"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: multienv-frontend
+    ports:
+      - "127.0.0.1:3000:80"
+    depends_on:
+      backend-dev:
+        condition: service_healthy
+      backend-prod:
+        condition: service_healthy
+    networks:
+      - multienv-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  multienv-network:
+    name: multienv-network
+    driver: bridge
