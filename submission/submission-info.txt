@@ -9,7 +9,7 @@ Frontend: http://localhost:3000
 Development API: http://localhost:3001/api/health
 Production API: http://localhost:3002/api/health
 
-Date of Submission: 14-11-2026 (change if submitting later)
+Date of Submission: 14-11-2026 
 
-Deployment Type: Local Docker Desktop (no EC2 instance used)
+Deployment Type: Local Docker Desktop 
 Notes: This repository contains a sample ticket application because the original application source code was not included in the project brief.
